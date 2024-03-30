@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="XML Templates\ResourceXMLTemplates.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.1.303">
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Source\Input\" />
+    <Folder Include="Source\GUI\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="XML Templates\ResourceXMLTemplates.xml" />
+  </ItemGroup>
+</Project>
