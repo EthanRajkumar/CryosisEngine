@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 namespace CryosisEngine
@@ -25,37 +26,42 @@ namespace CryosisEngine
             => GameObjects.FirstOrDefault(x => x.Name == name);
 
         /// <summary>
-        /// Appends a new <see cref="GameObject"/> to the collection. Fails if another object with a duplicate name exists.
+        /// Appends a new <see cref="GameObject"/> to the collection and all elements under it.
         /// </summary>
         /// <param name="obj"></param>
         public void AddGameObject(GameObject obj)
         {
-            if (GetGameObject(obj.Name) != null)
+            if (GameObjects.Contains(obj))
                 return;
 
-            GameObjects.Add(obj);
-            obj.ParentCollection = this;
+            List<GameObject> objects = new List<GameObject>();
+            obj.GetAllChildren(objects);
 
-            if (obj.Parent == null)
-                RootObjects.Add(obj);
+            for (int i = 0; i < objects.Count; i++)
+            {
+                GameObjects.Add(objects[i]);
+                objects[i].ParentCollection = this;
+            }
 
-            for(int i = 0; i < obj.Children.Count; i++)
-                AddGameObject(obj.Children[i]);
+            RootObjects.Add(obj);
         }
 
         /// <summary>
-        /// Removes a <see cref="GameObject"/> from the collection.
+        /// Removes a <see cref="GameObject"/> from the collection and all elements under it.
         /// </summary>
         /// <param name="obj"></param>
         public void RemoveGameObject(GameObject obj)
         {
-            if (GetGameObject(obj.Name) == null)
+            if (!GameObjects.Contains(obj))
                 return;
 
-            GameObjects.Remove(obj);
-            RootObjects.Remove(obj);
+            List<GameObject> objects = new List<GameObject>();
+            obj.GetAllChildren(objects);
 
-            obj.ParentCollection = null;
+            for (int i = 0; i < objects.Count; i++)
+                GameObjects.Remove(objects[i]);
+
+            RootObjects.Remove(obj);
         }
     }
 }

@@ -20,37 +20,47 @@ namespace CryosisEngine
         InOut
     }
 
-    public static class Easing
+    public class Easing
     {
-        public static float ApplyEasingFunction(float proportion, EasingType easingType, EasingDirection easingDirection)
+        public EasingType Function { get; set; }
+
+        public EasingDirection Direction { get; set; }
+
+        public Easing(EasingType function, EasingDirection direction)
         {
-            switch (easingType)
+            Function = function;
+            Direction = direction;
+        }
+
+        public float ApplyEasingFunction(float proportion)
+        {
+            switch (Function)
             {
                 default:
                 case EasingType.Linear:
                     return proportion;
 
                 case EasingType.Quadratic:
-                    return GetQuadraticEasing(proportion, easingDirection);
+                    return GetQuadraticEasing(proportion, Direction);
 
                 case EasingType.Cubic:
-                    return GetCubicEasing(proportion, easingDirection);
+                    return GetCubicEasing(proportion, Direction);
 
                 case EasingType.Quartic:
-                    return GetQuarticEasing(proportion, easingDirection);
+                    return GetQuarticEasing(proportion, Direction);
 
                 case EasingType.Quintic:
-                    return GetQuinticEasing(proportion, easingDirection);
+                    return GetQuinticEasing(proportion, Direction);
 
                 case EasingType.Exponential:
-                    return GetExponentialEasing(proportion, easingDirection);
+                    return GetExponentialEasing(proportion, Direction);
 
                 case EasingType.Sinusoidal:
-                    return GetSinusoidalEasing(proportion, easingDirection);
+                    return GetSinusoidalEasing(proportion, Direction);
             }
         }
 
-        public static float GetQuadraticEasing(float proportion, EasingDirection easingDirection)
+        public float GetQuadraticEasing(float proportion, EasingDirection easingDirection)
         {
             float compliment = proportion;
 
@@ -73,7 +83,7 @@ namespace CryosisEngine
             }
         }
 
-        public static float GetCubicEasing(float proportion, EasingDirection easingDirection)
+        public float GetCubicEasing(float proportion, EasingDirection easingDirection)
         {
             float compliment = 1f - proportion;
 
@@ -96,7 +106,7 @@ namespace CryosisEngine
             }
         }
 
-        public static float GetQuarticEasing(float proportion, EasingDirection easingDirection)
+        public float GetQuarticEasing(float proportion, EasingDirection easingDirection)
         {
             proportion *= proportion;
 
@@ -147,7 +157,7 @@ namespace CryosisEngine
             }
         }
 
-        public static float GetExponentialEasing(float proportion, EasingDirection easingDirection)
+        public float GetExponentialEasing(float proportion, EasingDirection easingDirection)
         {
             switch (easingDirection)
             {
@@ -156,19 +166,19 @@ namespace CryosisEngine
                     return proportion == 0f ? 0f : (float)Math.Pow(2f, (10f * proportion) - 10f);
 
                 case EasingDirection.Out:
-                    return proportion == 0f ? 0f : (float)Math.Pow(2f, (-10f * proportion)) + 1f;
+                    return proportion == 0f ? 0f : 1f - (float)Math.Pow(2f, (-10f * proportion));
 
                 case EasingDirection.InOut:
                     {
-                        if (proportion > 0.5f)
-                            return (float)Math.Pow(2, (20f * proportion) - 12f);
+                        if (proportion < 0.5f)
+                            return (float)Math.Pow(2, (20f * proportion) - 10f) / 2;
                         else
-                            return (float)Math.Pow(2, -20f * (proportion - 5f));
+                            return (float)Math.Pow(2, (-20f * proportion) + 10f) / 2;
                     }
             }
         }
 
-        public static float GetSinusoidalEasing(float proportion, EasingDirection easingDirection)
+        public float GetSinusoidalEasing(float proportion, EasingDirection easingDirection)
         {
             switch (easingDirection)
             {

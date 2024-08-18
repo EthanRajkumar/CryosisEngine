@@ -12,7 +12,7 @@ namespace CryosisEngine
         /// <inheritdoc/>
         protected override SoundFxReference LoadItem(string contentPath)
         {
-            string metaFilePath = $"{RootDirectory}/{WorkingDirectory}/{WorkingDirectory}_meta.xml", filePath, imagePath;
+            string metaFilePath = $"{RootDirectory}/{WorkingDirectory}/{WorkingDirectory}_meta.xml";
 
             string soundPath = contentPath + ".wav";
             float baseVolume = 1f, basePitch = 1f;

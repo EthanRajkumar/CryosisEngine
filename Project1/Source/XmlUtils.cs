@@ -1,4 +1,6 @@
-﻿using System.Xml.Linq;
+﻿using System.Collections.Generic;
+using System.Windows.Markup;
+using System.Xml.Linq;
 
 using Microsoft.Xna.Framework;
 
@@ -9,6 +11,17 @@ namespace CryosisEngine
     /// </summary>
     public static class XmlUtils
     {
+        public delegate GameComponent ComponentSerializer(XElement element);
+
+        public static Dictionary<string, ComponentSerializer> ComponentSerializers { get; set; } = new Dictionary<string, ComponentSerializer>()
+        {
+            { "GameSprite", GameSprite.FromXml },
+            { "SpriteAnimator", SpriteAnimator.FromXml },
+            { "ScrollingSprite", ScrollingSprite.FromXml },
+            { "TextComponent", TextComponent.FromXml },
+            { "Camera", Camera.FromXml }
+        };
+
         /// <summary>
         /// Deserializes an integer value from a specified <see cref="XAttribute"/> of an <see cref="XElement"/>.
         /// </summary>
@@ -41,6 +54,15 @@ namespace CryosisEngine
             else
                 return 0;
         }
+
+        /// <summary>
+        /// Returns the raw string value in a specified <see cref="XAttribute"/> of an <see cref="XElement"/>.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="xAttribute"></param>
+        /// <returns></returns>
+        public static string AttributeValue(XElement element, string xAttribute)
+            => element.Attribute(xAttribute).Value;
 
         /// <summary>
         /// Deserializes a <see cref="Point"/> struct from an XML element. Defaults to attributes name "X" and "Y".
@@ -82,7 +104,40 @@ namespace CryosisEngine
         /// Deserializes a <see cref="Transform2D"/> object from an XML element.
         /// </summary>
         public static Transform2D TransformFromXml(XElement e)
-            => new Transform2D(Vec2FromXml(e.Element("Position")), Vec2FromXml(e.Element("Dimensions")), Vec2FromXml(e.Element("Origin")), 
+            => new Transform2D(Vec2FromXml(e, "X", "Y"), Vec2FromXml(e, "W", "H"), Vec2FromXml(e, "oX", "oY"), 
                                FloatFromAttribute(e, "Rotation"), FloatFromAttribute(e, "Scale"));
+
+        public static GameObject GameObjectFromXml(XElement element)
+        {
+            string name = element.Attribute("Name").Value;
+            bool.TryParse(element.Attribute("IsActive").Value, out bool isActive);
+            bool.TryParse(element.Attribute("IsVisible").Value, out bool isVisible);
+            float.TryParse(element.Attribute("Alpha").Value, out float alpha);
+
+            Transform2D transform = TransformFromXml(element.Element("Transform"));
+
+            GameObject obj = new GameObject(name, transform) { IsActive = isActive, IsVisible = isVisible, Alpha = alpha };
+
+            foreach(XElement elem in element.Element("Components").Elements())
+                obj.AddComponent(GameComponentFromXml(elem));
+
+            foreach (XElement elem in element.Element("Children").Elements())
+                obj.AddObject(GameObjectFromXml(elem));
+
+            return obj;
+        }
+
+        public static GameComponent GameComponentFromXml(XElement element)
+        {
+            string componentType = element.Attribute("Type").Value;
+
+            return ComponentSerializers[componentType](element);
+        }
+
+        public static void LoadObjectsFromXml(XElement element, GameObjectCollection collection)
+        {
+            foreach (XElement elem in element.Elements())
+                collection.AddGameObject(GameObjectFromXml(elem));
+        }
     }
 }

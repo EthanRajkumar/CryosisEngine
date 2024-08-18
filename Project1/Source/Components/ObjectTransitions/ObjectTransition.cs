@@ -96,12 +96,7 @@ namespace CryosisEngine
         /// <summary>
         /// Determines the easing function used.
         /// </summary>
-        public EasingType InterpolationType { get; set; }
-
-        /// <summary>
-        /// Determines the easing direction used.
-        /// </summary>
-        public EasingDirection InterpolationDirection { get; set; }
+        public Easing Easing { get; set; }
 
         public ObjectTransition(int time, TransitionOptions options, EasingType easing, EasingDirection direction)
         {
@@ -109,8 +104,7 @@ namespace CryosisEngine
 
             Options = options;
 
-            InterpolationType = easing;
-            InterpolationDirection = direction;
+            Easing = new Easing(easing, direction);
         }
         
         public override void Update(GameTime gameTime)
@@ -145,11 +139,7 @@ namespace CryosisEngine
         /// </summary>
         /// <returns></returns>
         public float CalculateEasing()
-        {
-            float proportion = Timer.Proportion;
-
-            return Easing.ApplyEasingFunction(proportion, InterpolationType, InterpolationDirection);
-        }
+            => Easing.ApplyEasingFunction(Timer.Proportion);
 
         /// <summary>
         /// Makes changes to parent objects based upon time deltas.

@@ -24,10 +24,12 @@ namespace CryosisEngine
             {
                 float temp = _currentTime;
 
-                _currentTime = value;
+                _currentTime = Math.Max(0, Math.Min(value, TargetTime));
 
                 if(temp < TargetTime && IsExceeded)
-                    TimeExceeded?.Invoke(this, CurrentTime - TargetTime);
+                    TimeExceeded?.Invoke(this, value - TargetTime);
+                else if (temp > TargetTime && IsExceeded)
+                    TimeExceeded?.Invoke(this, value);
             }
         }
 
@@ -53,7 +55,7 @@ namespace CryosisEngine
             => TargetTime = targetTime;
 
         public void Update(GameTime gameTime)
-            => CurrentTime += Math.Max(0, Speed) * (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+            => CurrentTime += Speed * (float)gameTime.ElapsedGameTime.TotalMilliseconds;
 
         public void Reset()
             => CurrentTime = Speed >= 0 ? 0f : TargetTime;

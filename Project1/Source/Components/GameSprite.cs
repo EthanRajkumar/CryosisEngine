@@ -1,5 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using System;
+using System.Xml.Linq;
 
 namespace CryosisEngine
 {
@@ -49,12 +52,21 @@ namespace CryosisEngine
         /// </summary>
         public TextureFrame CurrentFrame => Atlas.Frames[FrameDisplayID];
 
+        public SpriteAnimator SpriteAnimator { get; set; }
+
         public GameSprite(int frameDisplayID, Color color, SpriteEffects flipMode, float zIndex)
         {
             FrameDisplayID = frameDisplayID;
             Color = color;
             FlipMode = flipMode;
             ZIndex = zIndex;
+        }
+
+        ///inheritdocs
+        public override void Awake(GameServiceContainer services)
+        {
+            base.Awake(services);
+            SpriteAnimator = Parent.GetComponent<SpriteAnimator>();
         }
 
         /// <summary>
@@ -67,20 +79,25 @@ namespace CryosisEngine
         /// <param name="alpha"></param>
         public override void Draw(SpriteBatch spriteBatch, Vector2 offset, Rectangle camera, float viewportScale, float alpha = 1)
         {
-            Point position = (Parent.Transform.TopLeft - offset).ToPoint();
-            Point size = Parent.Transform.TrueDimensions.ToPoint();
-
-            Rectangle destination = new Rectangle(position, size);
-
             alpha *= Alpha;
+
+            if (alpha == 0f || Atlas == null)
+                return;
+
+            Vector2 animationOffset = default;
+
+            if (SpriteAnimator != null)
+                animationOffset = SpriteAnimator.Animator.CurrentFrame.Offset * Parent.Transform.GlobalScale;
+
+            // Scale our coordinates to match viewport scaling
+            Point location = ((Parent.Transform.TopLeft - offset + animationOffset) * viewportScale).ToPoint();
+            Point size = (Parent.Transform.GlobalDimensions * viewportScale).ToPoint();
+
+            Rectangle destination = new Rectangle(location, size);
 
             // If our sprite will not appear onscreen, cancel its draw call to cull it.
             if (!destination.Intersects(camera) || alpha <= 0f)
                 return;
-
-            // Scale our coordinates to match viewport scaling
-            destination.Location = (Parent.Transform.TopLeft - offset * viewportScale).ToPoint();
-            destination.Size = (Parent.Transform.TrueDimensions * viewportScale).ToPoint();
 
             spriteBatch.Draw(Atlas.BaseTexture, destination, Atlas.Frames[FrameDisplayID].Bounds, Color, Parent.Transform.GlobalRotation, Vector2.Zero, FlipMode, ZIndex);
         }
@@ -91,6 +108,23 @@ namespace CryosisEngine
                 return;
 
             Atlas = services.GetService<TextureAtlasLoader>().LoadContent(ContentPaths[0]);
+        }
+
+        public override void UnloadContent(GameServiceContainer services)
+        {
+            services.GetService<TextureAtlasLoader>().UnloadContent(Atlas);
+        }
+
+        public static GameSprite FromXml(XElement element)
+        {
+            int frameID = XmlUtils.IntFromAttribute(element, "FrameID");
+            uint colorValue = XmlUtils.UIntFromAttribute(element, "ColorVal");
+            int flipMode = XmlUtils.IntFromAttribute(element, "FlipMode");
+            float zIndex = XmlUtils.FloatFromAttribute(element, "ZIndex");
+
+            string[] contentPaths = XmlUtils.AttributeValue(element, "ContentPaths").Split('|');
+
+            return new GameSprite(frameID, new Color(colorValue), (SpriteEffects)flipMode, zIndex) { ContentPaths = contentPaths };
         }
     }
 }

@@ -41,7 +41,7 @@ namespace CryosisEngine
         public override void Draw(SpriteBatch spriteBatch, Vector2 offset, Rectangle camera, float viewportScale, float alpha = 1)
         {
             Vector2 basePosition = Parent.Transform.TopLeft;
-            Vector2 tileSize = 
+            Vector2 tileSize = TileSize.ToVector2() * Parent.Transform.GlobalScale; 
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Xml.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -56,7 +57,7 @@ namespace CryosisEngine
                 return;
 
             Rectangle frameBounds = CurrentFrame.Bounds, sourceRectangle = default;
-            Vector2 drawOffset = default, drawSize = Parent.Transform.TrueDimensions;
+            Vector2 drawOffset = default, drawSize = Parent.Transform.GlobalDimensions;
 
             Point sourceOrigin = default;
             float rotation = Parent.Transform.GlobalRotation, scale = Parent.Transform.GlobalScale;
@@ -86,6 +87,19 @@ namespace CryosisEngine
                 drawOffset.X = 0;
                 sourceOrigin.Y = frameBounds.Y;
             }
+        }
+
+        public static ScrollingSprite FromXml(XElement element)
+        {
+            int frameID = XmlUtils.IntFromAttribute(element, "FrameID");
+            uint colorValue = XmlUtils.UIntFromAttribute(element, "ColorVal");
+            int flipMode = XmlUtils.IntFromAttribute(element, "FlipMode");
+            float zIndex = XmlUtils.FloatFromAttribute(element, "ZIndex");
+            Vector2 scrollSpeed = XmlUtils.Vec2FromXml(element, "ScrollX", "ScrollY");
+
+            string[] contentPaths = XmlUtils.AttributeValue(element, "ContentPaths").Split('|');
+
+            return new ScrollingSprite(new Color(colorValue), frameID, (SpriteEffects)flipMode, zIndex, scrollSpeed) { ContentPaths = contentPaths };
         }
     }
 }

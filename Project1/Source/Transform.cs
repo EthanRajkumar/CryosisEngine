@@ -9,10 +9,32 @@ namespace CryosisEngine
     /// </summary>
     public class Transform2D
     {
+        Transform2D _parent;
+
         /// <summary>
         /// Defines the parent to base <see cref="GlobalPosition"/>, <see cref="GlobalRotation"/>, and <see cref="GlobalScale"/> values from.
         /// </summary>
-        public Transform2D Parent { get; set; }
+        public Transform2D Parent
+        {
+            get => _parent;
+
+            set
+            {
+                Vector2 position = GlobalPosition;
+                Vector2 dimensions = GlobalDimensions;
+                Vector2 origin = GlobalOrigin;
+                float rotation = GlobalRotation;
+                float scale = GlobalScale;
+
+                _parent = value;
+
+                GlobalPosition = position;
+                GlobalDimensions = dimensions;
+                GlobalOrigin = origin;
+                GlobalRotation = rotation;
+                GlobalScale = scale;
+            }
+        }
 
         /// <summary>
         /// Defines local position of the object in 2D space.
@@ -42,22 +64,49 @@ namespace CryosisEngine
         /// <summary>
         /// Determines the object's global position given it's chain of parents. Uses local position if no parent exists.
         /// </summary>
-        public Vector2 GlobalPosition => Parent == null ? Position : ((CryosisMath.Rotate(Position, Parent.GlobalRotation) * Parent.GlobalScale) + Parent.GlobalPosition);
+        public Vector2 GlobalPosition
+        {
+            get => Parent == null ? Position : ((CryosisMath.Rotate(Position, Parent.GlobalRotation) * Parent.GlobalScale) + Parent.GlobalPosition);
+
+            set => Position += CryosisMath.Rotate(value - GlobalPosition, -GlobalRotation);
+        }
 
         /// <summary>
         /// Determines the object's global rotation given it's chain of parents. Uses local rotation if no parent exists.
         /// </summary>
-        public float GlobalRotation => Parent == null ? Rotation : (Rotation + Parent.GlobalRotation);
+        public float GlobalRotation
+        {
+            get => Parent == null ? Rotation : (Rotation + Parent.GlobalRotation);
+
+            set => Rotation += (value - GlobalRotation);
+        }
 
         /// <summary>
         /// Determines the object's global scale given it's chain of parents. Uses local scale if no parent exists.
         /// </summary>
-        public float GlobalScale => Parent == null ? Scale : (Scale * Parent.GlobalScale);
+        public float GlobalScale
+        {
+            get => Parent == null ? Scale : (Scale * Parent.GlobalScale);
+
+            set => Scale = (value * Scale) / GlobalScale;
+        }
 
         /// <summary>
         /// Determines the object's dimensions given global scale factors.
         /// </summary>
-        public Vector2 TrueDimensions => Dimensions * GlobalScale;
+        public Vector2 GlobalDimensions
+        {
+            get => Dimensions * GlobalScale;
+
+            set => Dimensions = value / GlobalScale;
+        }
+
+        public Vector2 GlobalOrigin
+        {
+            get => Origin * GlobalScale;
+
+            set => Origin = value / GlobalScale;
+        }
 
         public Transform2D(Vector2 position, Vector2 dimensions, Vector2 origin, float rotation, float scale)
         {

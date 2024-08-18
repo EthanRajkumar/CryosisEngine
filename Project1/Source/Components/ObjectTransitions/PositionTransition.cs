@@ -24,17 +24,13 @@ namespace CryosisEngine
         /// <inheritdoc/>
         public override void CorrectDelta()
         {
-            Vector2 position = Parent.Transform.Position;
+            Vector2 position = Parent.Transform.Position, snappedPosition = Vector2.Round(position);
 
-            if ((position.X - (int)position.X) < SNAPPING_TOLERANCE)
-                position.X = (int)position.X;
-            else if ((position.X - (int)position.X) > (1f - SNAPPING_TOLERANCE))
-                position.X = (int)position.X + 1f;
+            if (Math.Abs(position.X - snappedPosition.X) < SNAPPING_TOLERANCE)
+                position.X = snappedPosition.X;
 
-            if ((position.Y - (int)position.Y) < SNAPPING_TOLERANCE)
-                position.Y = (int)position.Y;
-            else if ((position.Y - (int)position.Y) > (1f - SNAPPING_TOLERANCE))
-                position.Y = (int)position.Y + 1f;
+            if (Math.Abs(position.Y - snappedPosition.Y) < SNAPPING_TOLERANCE)
+                position.Y = snappedPosition.Y;
 
             Parent.Transform.Position = position;
         }

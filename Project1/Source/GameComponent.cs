@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Xml.Linq;
 
 namespace CryosisEngine
 {
@@ -11,10 +12,10 @@ namespace CryosisEngine
         public GameObject Parent { get; set; }
 
         /// <inheritdoc/>
-        public bool IsActive { get; set; }
+        public bool IsActive { get; set; } = true;
 
         /// <inheritdoc/>
-        public bool IsVisible { get; set; }
+        public bool IsVisible { get; set; } = true;
 
         /// <inheritdoc/>
         public float Alpha { get; set; } = 1f;

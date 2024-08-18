@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -209,7 +210,7 @@ namespace CryosisEngine
         }
 
         /// <summary>
-        /// Parents a <see cref="GameObject"/> to this one. Fails if the chain of parenting causes a cyclic dependency.
+        /// Parents a <see cref="GameObject"/> to this one. Fails if the chain of parenting causes a cyclic dependency. Any child added is no longer a root object.
         /// </summary>
         /// <param name="child"></param>
         public void AddObject(GameObject child)
@@ -219,16 +220,21 @@ namespace CryosisEngine
 
             child.Parent = this;
             Children.Add(child);
+
+            ParentCollection.RootObjects.Remove(child);
         }
 
         /// <summary>
-        /// Removes a <see cref="GameObject"/> from this one.
+        /// Removes a <see cref="GameObject"/> from this one. The child object then becomes a root object with no parent.
         /// </summary>
         /// <param name="child"></param>
         public void RemoveChild(GameObject gameObject)
         {
-            if(Children.Contains(gameObject))
+            if (Children.Contains(gameObject))
+            {
                 gameObject.Parent = null;
+                ParentCollection.RootObjects.Add(gameObject);
+            }
 
             Children.Remove(gameObject);
         }
@@ -270,6 +276,18 @@ namespace CryosisEngine
         public void Remove()
         {
             Parent?.RemoveChild(this);
+        }
+
+        public List<GameObject> GetAllChildren(List<GameObject> objects)
+        {
+            objects.Add(this);
+
+            for(int i = 0; i < Children.Count; i++)
+            {
+                Children[i].GetAllChildren(objects);
+            }
+
+            return objects;
         }
     }
 }
